@@ -15,8 +15,8 @@ Mesh createSquareGrid(float width, float height, int m, int n)
     for (int j = 0; j <= n; ++j)
     {
       // Calculate vertex position
-      float x = j * colStep;
-      float y = i * rowStep;
+      float x = j * colStep - width / 2.0f;
+      float y = i * rowStep - height / 2.0f;
       mesh.addVertex(glm::vec3(x, y, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     }
   }
@@ -92,10 +92,10 @@ int main()
   Mesh squareGridMesh = createSquareGrid(1.0f, 1.0f, 3, 4);
 
   // Create a unit sphere with 4 slices and 2 stacks
-  Mesh sphereMesh = createSphere(1.0f, 4, 2);
+  Mesh sphereMesh = createSphere(0.6f, 4, 2);
 
   // Render or process the meshes as needed
   // ...
-  squareGridMesh.render();
+  sphereMesh.render();
   return 0;
 }

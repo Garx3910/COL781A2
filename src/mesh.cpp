@@ -54,7 +54,7 @@ std::vector<Triangle> Mesh::getNeighboringTriangles(int vertexIndex)
   return neighboringTriangles;
 }
 
-// Render the mesh using a rasterization API (dummy implementation)
+// Render the mesh using a rasterization API
 void Mesh::render()
 {
   COL781::Viewer::Viewer v;
