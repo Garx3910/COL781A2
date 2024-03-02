@@ -7,9 +7,12 @@ find_package(glm REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 
-add_library(viewer src/hw.cpp src/viewer.cpp deps/src/gl.c)
+add_library(viewer src/hw.cpp src/viewer.cpp src/mesh.cpp deps/src/gl.c)
 target_include_directories(viewer PUBLIC deps/include)
 target_link_libraries(viewer glm::glm OpenGL::GL SDL2::SDL2)
 
 add_executable(example src/example.cpp)
 target_link_libraries(example viewer)
+
+add_executable(mesh_example src/mesh_example.cpp)
+target_link_libraries(mesh_example viewer)

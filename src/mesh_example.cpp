@@ -50,10 +50,10 @@ Mesh createSphere(float radius, int m, int n)
   // Generate vertices
   for (int i = 0; i <= n; ++i)
   {
-    float theta = glm::pi<float>() * static_cast<float>(i) / static_cast<float>(n);
+    float theta = M_PI * static_cast<float>(i) / static_cast<float>(n);
     for (int j = 0; j <= m; ++j)
     {
-      float phi = 2.0f * glm::pi<float>() * static_cast<float>(j) / static_cast<float>(m);
+      float phi = 2.0f * M_PI * static_cast<float>(j) / static_cast<float>(m);
 
       // Calculate vertex position
       float x = radius * std::sin(theta) * std::cos(phi);
@@ -96,6 +96,6 @@ int main()
 
   // Render or process the meshes as needed
   // ...
-
+  squareGridMesh.render();
   return 0;
 }
