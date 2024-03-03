@@ -79,3 +79,47 @@ void Mesh::render()
   v.setTriangles(triangles.size(), trianglesArray);
   v.view();
 }
+
+// Smooth the mesh using the umbrella operator
+void Mesh::smoothMesh(float lambda, int iterations)
+{
+  for (int it = 0; it < iterations; ++it)
+  {
+    std::vector<glm::vec3> newPositions(vertices.size());
+
+    for (size_t i = 0; i < vertices.size(); ++i)
+    {
+      glm::vec3 averagePosition(0.0f);
+
+      for (int j : vertices[i].adjacentTriangles)
+      {
+        for (int k : triangles[j].vertices)
+        {
+          if (k != i)
+          {
+            averagePosition += vertices[k].position;
+          }
+        }
+      }
+
+      averagePosition /= vertices[i].adjacentTriangles.size() * 2;
+      glm::vec3 delta = averagePosition - vertices[i].position;
+      newPositions[i] = vertices[i].position + lambda * delta;
+    }
+
+    for (size_t i = 0; i < vertices.size(); ++i)
+    {
+      vertices[i].position = newPositions[i];
+    }
+  }
+}
+
+// Perform Taubin smoothing on the mesh
+void Mesh::taubinSmoothMesh(int iterations)
+{
+  for (int it = 0; it < iterations; ++it)
+  {
+    smoothMesh(0.33, 1);
+    smoothMesh(-0.34, 1);
+  }
+}

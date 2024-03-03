@@ -41,6 +41,12 @@ public:
 
   // Render the mesh using a rasterization API (dummy implementation)
   void render();
+
+  // Smooth the mesh using the umbrella operator
+  void smoothMesh(float lambda, int iterations);
+
+  // Perform Taubin smoothing on the mesh
+  void taubinSmoothMesh(int iterations);
 };
 
 #endif // MESH_HPP
