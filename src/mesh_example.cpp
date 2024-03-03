@@ -95,7 +95,7 @@ int main()
   Mesh sphereMesh = createSphere(0.6f, 4, 2);
 
   // Render or process the meshes as needed
-  // ...
   sphereMesh.render();
+  // squareGridMesh.render();
   return 0;
 }
