@@ -1,7 +1,0 @@
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/viewer.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/example.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/mesh_example1.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/mesh_example2.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/parser.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/edit_cache.dir
-/home/garx/Desktop/COL781/A2/build/CMakeFiles/rebuild_cache.dir
