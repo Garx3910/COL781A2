@@ -116,12 +116,12 @@ void Mesh::smoothMesh(float lambda, int iterations)
 }
 
 // Perform Taubin smoothing on the mesh
-void Mesh::taubinSmoothMesh(int iterations)
+void Mesh::taubinSmoothMesh(float lambda, float nu, int iterations)
 {
   for (int it = 0; it < iterations; ++it)
   {
-    smoothMesh(0.33, 1);
-    smoothMesh(-0.34, 1);
+    smoothMesh(lambda, 1);
+    smoothMesh(nu, 1);
   }
 }
 

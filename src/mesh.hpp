@@ -46,7 +46,7 @@ public:
   void smoothMesh(float lambda, int iterations);
 
   // Perform Taubin smoothing on the mesh
-  void taubinSmoothMesh(int iterations);
+  void taubinSmoothMesh(float lambda, float nu, int iterations);
 
   //perform edge flip operation on the mesh
   void edgeFlip(int vertexIndex1, int vertexIndex2);

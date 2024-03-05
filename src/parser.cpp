@@ -1,13 +1,6 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <bits/stdc++.h>
-#include <string>
-#include <glm/glm.hpp>
-#include <algorithm>
-#include "mesh.hpp"
+#include "parser.hpp"
 
-void parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<glm::ivec3>& faces) {
+void Parser::parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<glm::ivec3>& faces) {
     std::ifstream file(filename);
     if(!file.good())
     {
@@ -56,7 +49,7 @@ void parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std
 
 
 // Function to create a map of vertices to the indices of faces containing each vertex
-std::map<int, std::vector<int>> createVertexFacesMap(const std::vector<glm::ivec3>& faces) {
+std::map<int, std::vector<int>> Parser::createVertexFacesMap(const std::vector<glm::ivec3>& faces) {
     std::map<int, std::vector<int>> vertexFacesMap;
 
     // Iterate through each face
@@ -83,7 +76,7 @@ std::map<int, std::vector<int>> createVertexFacesMap(const std::vector<glm::ivec
     return vertexFacesMap;
 }
 
-glm::vec3 getVertexNormal(int vidx,const std::vector<glm::ivec3>& faces,const std::vector<int>& faceMap, const std::vector<glm::vec3>& vertices)
+glm::vec3 Parser::getVertexNormal(int vidx,const std::vector<glm::ivec3>& faces,const std::vector<int>& faceMap, const std::vector<glm::vec3>& vertices)
 {
     glm::vec3 normal=glm::vec3(0);
     for (int faceidx : faceMap)
@@ -106,7 +99,7 @@ glm::vec3 getVertexNormal(int vidx,const std::vector<glm::ivec3>& faces,const st
     return normal;
 }
 
-void setNormals(const std::vector<glm::ivec3>& faces, const std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals)
+void Parser::setNormals(const std::vector<glm::ivec3>& faces, const std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals)
 {
     // Create a map of vertices to the indices of faces containing each vertex
     std::map<int, std::vector<int>> vertexFacesMap = createVertexFacesMap(faces);
@@ -118,7 +111,7 @@ void setNormals(const std::vector<glm::ivec3>& faces, const std::vector<glm::vec
     }
 }
 
-Mesh objToMesh(const std::string filename)
+Mesh Parser::objToMesh(const std::string filename)
 {
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
@@ -141,20 +134,5 @@ Mesh objToMesh(const std::string filename)
     return mesh;
 }
 
-int main(int argc, char* argv[]) {
-
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
-        return 1;
-    }
-
-    std::string filename = argv[1];
-
-    Mesh mesh=objToMesh(filename);    
-
-    mesh.render();
-
-    return 0;
-}
 
 
