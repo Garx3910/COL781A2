@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/parser.dir/src/parser.cpp.o -o parser  libviewer.a /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libSDL2.so 

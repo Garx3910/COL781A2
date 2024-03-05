@@ -9,6 +9,10 @@
 
 void parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<glm::ivec3>& faces) {
     std::ifstream file(filename);
+    if(!file.good())
+    {
+        std::cout<<"Cannor Open File "<<filename<<". Please check filename"<<std::endl;
+    }
     std::string line;
 
     while (std::getline(file, line)) {
@@ -114,15 +118,8 @@ void setNormals(const std::vector<glm::ivec3>& faces, const std::vector<glm::vec
     }
 }
 
-int main(int argc, char* argv[]) {
-
-    if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
-        return 1;
-    }
-
-    std::string filename = argv[1];
-
+Mesh objToMesh(const std::string filename)
+{
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<glm::ivec3> faces;
@@ -141,6 +138,19 @@ int main(int argc, char* argv[]) {
     {
         mesh.addTriangle(face.x,face.y,face.z);
     }
+    return mesh;
+}
+
+int main(int argc, char* argv[]) {
+
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
+    }
+
+    std::string filename = argv[1];
+
+    Mesh mesh=objToMesh(filename);    
 
     mesh.render();
 

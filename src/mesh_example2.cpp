@@ -1,5 +1,7 @@
 #include "mesh.hpp"
 #include <cmath>
+#include <sstream>
+#include <iostream>
 
 Mesh createSquareGrid(float width, float height, int m, int n)
 {
@@ -88,14 +90,14 @@ Mesh createSphere(float radius, int m, int n)
 
 int main()
 {
-  // Create a unit square grid divided into 3 rows and 4 columns
-  Mesh squareGridMesh = createSquareGrid(1.0f, 1.0f, 3, 4);
 
-  // Create a unit sphere with 4 slices and 2 stacks
-  Mesh sphereMesh = createSphere(0.6f, 4, 2);
+  Mesh mesh = createSquareGrid(1.0f,1.0f,4,4);
+  mesh.edgeSplit(6,11);
+  mesh.edgeFlip(8,12);
+
 
   // Render or process the meshes as needed
-  sphereMesh.render();
+  mesh.render();
   // squareGridMesh.render();
   return 0;
 }

@@ -14,8 +14,11 @@ target_link_libraries(viewer glm::glm OpenGL::GL SDL2::SDL2)
 add_executable(example src/example.cpp)
 target_link_libraries(example viewer)
 
-add_executable(mesh_example src/mesh_example.cpp)
-target_link_libraries(mesh_example viewer)
+add_executable(mesh_example1 src/mesh_example1.cpp)
+target_link_libraries(mesh_example1 viewer)
+
+add_executable(mesh_example2 src/mesh_example2.cpp)
+target_link_libraries(mesh_example2 viewer)
 
 add_executable(parser src/parser.cpp)
 target_link_libraries(parser viewer)

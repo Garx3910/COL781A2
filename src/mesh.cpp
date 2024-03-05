@@ -1,5 +1,6 @@
 #include "mesh.hpp"
 #include "viewer.hpp"
+#include <algorithm>
 
 // Add a vertex to the mesh
 int Mesh::addVertex(const glm::vec3 &pos, const glm::vec3 &normal)
@@ -157,9 +158,9 @@ void Mesh::edgeFlip(int vertexIndex1, int vertexIndex2)
   for (int i=0;i<3;i++)
   {
     if(triangles[t1idx].vertices[i]!=vertexIndex1 && triangles[t1idx].vertices[i]!=vertexIndex2)
-    v3=i;
+    v3=triangles[t1idx].vertices[i];
     if(triangles[t2idx].vertices[i]!=vertexIndex1 && triangles[t2idx].vertices[i]!=vertexIndex2)
-    v4=i;
+    v4=triangles[t2idx].vertices[i];;
   }
   bool clockwise=false;
   for (int i=0;i<2;i++)
@@ -247,7 +248,7 @@ void Mesh::edgeSplit(int v1, int v2)
     for (int i=0;i<3;i++)
     {
       if(triangles[t1idx].vertices[i]!=v1 && triangles[t1idx].vertices[i]!=v2)
-      v3=i;
+      v3=triangles[t1idx].vertices[i];
     }
     bool clockwise=false;
     for (int i=0;i<2;i++)
@@ -323,9 +324,9 @@ void Mesh::edgeSplit(int v1, int v2)
     for (int i=0;i<3;i++)
     {
       if(triangles[t1idx].vertices[i]!=v1 && triangles[t1idx].vertices[i]!=v2)
-      v3=i;
+      v3=triangles[t1idx].vertices[i];
       if(triangles[t2idx].vertices[i]!=v1 && triangles[t2idx].vertices[i]!=v2)
-      v4=i;
+      v4=triangles[t2idx].vertices[i];
     }
     
     bool clockwise=false;
@@ -436,7 +437,147 @@ void Mesh::edgeSplit(int v1, int v2)
 
 void Mesh::edgeCollapse(int v1, int v2)
 {
+  int t1idx=-1, t2idx=-1;
+  for (int i=0;i<triangles.size();i++)
+  {
+    if((triangles[i].vertices[0]==v1 && triangles[i].vertices[1]==v2)
+    || (triangles[i].vertices[0]==v1 && triangles[i].vertices[2]==v2) 
+    || (triangles[i].vertices[1]==v1 && triangles[i].vertices[0]==v2) 
+    || (triangles[i].vertices[1]==v1 && triangles[i].vertices[2]==v2)
+    || (triangles[i].vertices[2]==v1 && triangles[i].vertices[0]==v2) 
+    || (triangles[i].vertices[2]==v1 && triangles[i].vertices[1]==v2))
+    {
+      //triangle containts the edge
+      if(t1idx==-1)
+      t1idx=i;
+      else
+      {
+        t2idx=i;
+        break;
+      }
+    }
+  }
+  int v3, v4;
+  for (int i=0;i<3;i++)
+  {
+    if(triangles[t1idx].vertices[i]!=v1 && triangles[t1idx].vertices[i]!=v2)
+    v3=triangles[t1idx].vertices[i];
+    if(triangles[t2idx].vertices[i]!=v1 && triangles[t2idx].vertices[i]!=v2)
+    v4=triangles[t2idx].vertices[i];;
+  }
+  std::cout<<v3<<" "<<v4<<std::endl;
+  bool clockwise=false;
+  for (int i=0;i<2;i++)
+  {
+    if(triangles[t1idx].vertices[i]==v1 && triangles[t1idx].vertices[(i+1)%3]==v3)
+    {
+      clockwise=true;
+      break;
+    }
+  }
+  Vertex v5data,v1data,v2data;
+  v1data=vertices[v1];
+  v2data=vertices[v2];
+  std::vector<Vertex>& temp=vertices;
   
+
+  int v5=vertices.size();
+  vertices.push_back(v5data);
+
+  vertices[v5].position=(v1data.position+v2data.position)/2.0f;
+  vertices[v5].normal=(v1data.normal+v2data.normal)/2.0f;
+
+  std::vector<int>& tmp = v1data.adjacentTriangles;
+  for (int i=0;i<tmp.size();i++)
+  {
+    if(tmp[i]==t1idx || tmp[i]==t2idx)
+      continue;
+    else
+    {
+      Triangle& tv1=triangles[tmp[i]];
+      vertices[v5].adjacentTriangles.push_back(tmp[i]);
+      for (int j=0;j<3;j++)
+      {
+        if (tv1.vertices[j]==v1)
+        {
+          tv1.vertices[j]=v5;
+        }
+      }
+    }
+  }
+  std::vector<int>& tmp2 = v2data.adjacentTriangles;
+  for (int i=0;i<tmp2.size();i++)
+  {
+    if(tmp2[i]==t1idx || tmp2[i]==t2idx)
+      continue;
+    else
+    {
+      Triangle& tv2=triangles[tmp2[i]];
+      vertices[v5].adjacentTriangles.push_back(tmp2[i]);
+      for (int j=0;j<3;j++)
+      {
+        if (tv2.vertices[j]==v2)
+        {
+          tv2.vertices[j]=v5;
+        }
+      }
+    }
+  }
+  std::vector<int>& tmp3 = vertices[v3].adjacentTriangles;
+  for (int i=0;i<tmp3.size();i++)
+  {
+    if(tmp3[i]==t1idx)
+    {
+      tmp3.erase(tmp3.begin()+i);
+      break;
+    }
+  }
+  std::vector<int>& tmp4 = vertices[v4].adjacentTriangles;
+  for (int i=0;i<tmp4.size();i++)
+  {
+    if(tmp4[i]==t2idx)
+    {
+      tmp4.erase(tmp4.begin()+i);
+      break;
+    }
+  }
+  int vmin, vmax, tmin, tmax;
+  vmin=std::min(v1,v2);
+  vmax=std::max(v1,v2);
+  tmin=std::min(t1idx,t2idx);
+  tmax=std::max(t1idx,t2idx);
+
+  vertices.erase(vertices.begin()+vmax);
+  vertices.erase(vertices.begin()+vmin);
+
+  triangles.erase(triangles.begin()+tmin);
+  triangles.erase(triangles.begin()+tmax);
+
+  // for (auto t:triangles)
+  // {
+  //   for(int k=0;k<3;k++)
+  //   {
+  //     if(t.vertices[k]<vmin)
+  //       continue;
+  //     else if(t.vertices[k]<vmax)
+  //       t.vertices[k]--;
+  //     else
+  //       t.vertices[k]-=2;
+  //   }
+  // }
+  // for (auto v:vertices)
+  // {
+  //   for(int k=0;k<v.adjacentTriangles.size();k++)
+  //   {
+  //     if(v.adjacentTriangles[k]<tmin)
+  //       continue;
+  //     else if(v.adjacentTriangles[k]<tmax)
+  //       v.adjacentTriangles[k]--;
+  //     else
+  //       v.adjacentTriangles[k]-=2;
+  //   }
+  // }
+
 }
 
 bool Mesh::isValid()
