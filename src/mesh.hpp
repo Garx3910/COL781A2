@@ -53,6 +53,9 @@ public:
 
   //perform edge flip operation on the mesh
   void edgeSplit(int vertexIndex1, int vertexIndex2);
+
+  //checks if edge exists between two vertices
+  bool edgeExists(int vertexIndex1, int vertexIndex2);
   
   //perform edge flip operation on the mesh
   void edgeCollapse(int vertexIndex1, int vertexIndex2);
