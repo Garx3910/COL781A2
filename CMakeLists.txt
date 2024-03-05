@@ -16,3 +16,6 @@ target_link_libraries(example viewer)
 
 add_executable(mesh_example src/mesh_example.cpp)
 target_link_libraries(mesh_example viewer)
+
+add_executable(parser src/parser.cpp)
+target_link_libraries(parser viewer)

@@ -5,6 +5,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <algorithm>
+#include "mesh.hpp"
 
 void parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals, std::vector<glm::ivec3>& faces) {
     std::ifstream file(filename);
@@ -42,7 +43,7 @@ void parseOBJ(const std::string& filename, std::vector<glm::vec3>& vertices, std
             faces.push_back(face);
         }
     }
-    int diff=size(vertices)-size(normals);
+    int diff=vertices.size()-normals.size();
     for (int i =0;i<diff;i++)
     { 
         normals.push_back(glm::vec3(0.0));
@@ -101,41 +102,47 @@ glm::vec3 getVertexNormal(int vidx,const std::vector<glm::ivec3>& faces,const st
     return normal;
 }
 
-
-int main() {
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::ivec3> faces;
-
-    parseOBJ("../meshes/cube.obj", vertices, normals, faces);
-
+void setNormals(const std::vector<glm::ivec3>& faces, const std::vector<glm::vec3>& vertices, std::vector<glm::vec3>& normals)
+{
     // Create a map of vertices to the indices of faces containing each vertex
     std::map<int, std::vector<int>> vertexFacesMap = createVertexFacesMap(faces);
 
-    for (int i=0;i<size(vertices);i++)
+    for (int i=0;i<vertices.size();i++)
     {
         if(glm::all(glm::equal(normals[i], glm::vec3(0.0f))))
         normals[i]=getVertexNormal(i,faces,vertexFacesMap[i],vertices);
     }
+}
 
-    std::cout<<size(vertices)<<std::endl;
-    std::cout<<size(normals)<<std::endl;
-    std::cout<<size(faces)<<std::endl;
-    for (int i=0;i<size(vertices);i++)
-    {
-        auto x=vertices[i];
-        std::cout << x.x <<" "<<x.y<<" "<<x.z<<" v"<< std::endl;
+int main(int argc, char* argv[]) {
+
+    if (argc != 2) {
+        std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+        return 1;
     }
-    for (int i=0;i<size(normals);i++)
+
+    std::string filename = argv[1];
+
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::ivec3> faces;
+
+    parseOBJ(filename, vertices, normals, faces);
+
+    setNormals(faces,vertices,normals);
+
+    Mesh mesh;
+
+    for (int i =0;i<vertices.size();i++)
     {
-        auto x=normals[i];
-        std::cout << x.x <<" "<<x.y<<" "<<x.z<<" vn"<< std::endl;
+        mesh.addVertex(vertices[i],normals[i]);
     }
-    for (int i=0;i<size(faces);i++)
+    for (auto face:faces)
     {
-        auto x=faces[i];
-        std::cout << x.x <<" "<<x.y<<" "<<x.z<<" f"<< std::endl;
+        mesh.addTriangle(face.x,face.y,face.z);
     }
+
+    mesh.render();
 
     return 0;
 }

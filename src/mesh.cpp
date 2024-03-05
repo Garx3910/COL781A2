@@ -123,3 +123,368 @@ void Mesh::taubinSmoothMesh(int iterations)
     smoothMesh(-0.34, 1);
   }
 }
+
+void Mesh::edgeFlip(int vertexIndex1, int vertexIndex2)
+{
+  int t1idx=-1, t2idx=-1;
+  for (int i=0;i<triangles.size();i++)
+  {
+    if((triangles[i].vertices[0]==vertexIndex1 && triangles[i].vertices[1]==vertexIndex2)
+    || (triangles[i].vertices[0]==vertexIndex1 && triangles[i].vertices[2]==vertexIndex2) 
+    || (triangles[i].vertices[1]==vertexIndex1 && triangles[i].vertices[0]==vertexIndex2) 
+    || (triangles[i].vertices[1]==vertexIndex1 && triangles[i].vertices[2]==vertexIndex2)
+    || (triangles[i].vertices[2]==vertexIndex1 && triangles[i].vertices[0]==vertexIndex2) 
+    || (triangles[i].vertices[2]==vertexIndex1 && triangles[i].vertices[1]==vertexIndex2))
+    {
+      //triangle contains the edge
+      if(t1idx==-1)
+      t1idx=i;
+      else
+      {
+        t2idx=i;
+        break;
+      }
+    }
+  }
+  //t1idx, t2idx are triangles sharing the edge
+  if(t2idx==-1)
+  {
+    //edge is part of only one or no triangle
+    std::cout<<"edge not flippable"<<std::endl;
+    return ;
+  }
+  int v3, v4;
+  for (int i=0;i<3;i++)
+  {
+    if(triangles[t1idx].vertices[i]!=vertexIndex1 && triangles[t1idx].vertices[i]!=vertexIndex2)
+    v3=i;
+    if(triangles[t2idx].vertices[i]!=vertexIndex1 && triangles[t2idx].vertices[i]!=vertexIndex2)
+    v4=i;
+  }
+  bool clockwise=false;
+  for (int i=0;i<2;i++)
+  {
+    if(triangles[t1idx].vertices[i]==vertexIndex1 && triangles[t1idx].vertices[(i+1)%3]==vertexIndex2)
+    {
+      clockwise=true;
+      break;
+    }
+  }
+  if(clockwise)
+  {
+    triangles[t1idx].vertices[0]=v3;
+    triangles[t1idx].vertices[1]=vertexIndex1;
+    triangles[t1idx].vertices[2]=v4;
+    triangles[t2idx].vertices[0]=v3;
+    triangles[t2idx].vertices[1]=v4;
+    triangles[t2idx].vertices[2]=vertexIndex2;
+  }
+  else
+  {
+    triangles[t1idx].vertices[0]=v3;
+    triangles[t1idx].vertices[1]=v4;
+    triangles[t1idx].vertices[2]=vertexIndex1;
+    triangles[t2idx].vertices[0]=v3;
+    triangles[t2idx].vertices[1]=vertexIndex2;
+    triangles[t2idx].vertices[2]=v4;
+  }
+  //update adjacent triangles of v1,v2,v3,v4
+  std::vector<int>& temp=vertices[vertexIndex1].adjacentTriangles;
+  for (auto it = temp.begin(); it != temp.end();) {
+    if (*it == t1idx) {
+      it = temp.erase(it); 
+      break;
+    } 
+    else {
+      ++it;
+    }
+  }
+  std::vector<int>& temp2=vertices[vertexIndex2].adjacentTriangles;
+  for (auto it = temp2.begin(); it != temp2.end(); ) {
+    if (*it == t2idx) {
+      it = temp2.erase(it); 
+      break;
+    } 
+    else {
+      ++it;
+    }
+  }
+  vertices[v3].adjacentTriangles.push_back(t2idx);
+  vertices[v4].adjacentTriangles.push_back(t1idx);
+}
+
+void Mesh::edgeSplit(int v1, int v2)
+{
+  int t1idx=-1, t2idx=-1;
+  for (int i=0;i<triangles.size();i++)
+  {
+    if((triangles[i].vertices[0]==v1 && triangles[i].vertices[1]==v2)
+    || (triangles[i].vertices[0]==v1 && triangles[i].vertices[2]==v2) 
+    || (triangles[i].vertices[1]==v1 && triangles[i].vertices[0]==v2) 
+    || (triangles[i].vertices[1]==v1 && triangles[i].vertices[2]==v2)
+    || (triangles[i].vertices[2]==v1 && triangles[i].vertices[0]==v2) 
+    || (triangles[i].vertices[2]==v1 && triangles[i].vertices[1]==v2))
+    {
+      //triangle containts the edge
+      if(t1idx==-1)
+      t1idx=i;
+      else
+      {
+        t2idx=i;
+        break;
+      }
+    }
+  }
+  if(t1idx==-1)
+  {
+    std::cout<<v1<<", "<<v2<<" do not form an edge in the mesh"<<std::endl;
+    return;
+  }
+  if(t2idx==-1)
+  {
+    // edge contained in only one triangle
+    int v3;
+    for (int i=0;i<3;i++)
+    {
+      if(triangles[t1idx].vertices[i]!=v1 && triangles[t1idx].vertices[i]!=v2)
+      v3=i;
+    }
+    bool clockwise=false;
+    for (int i=0;i<2;i++)
+    {
+      if(triangles[t1idx].vertices[i]==v1 && triangles[t1idx].vertices[(i+1)%3]==v2)
+      {
+        clockwise=true;
+        break;
+      }
+    }
+    int v4=vertices.size();
+    int newt = triangles.size();
+    Triangle newtdata;
+    triangles.push_back(newtdata);
+    if(clockwise){
+      triangles[t1idx].vertices[0]=v3;
+      triangles[t1idx].vertices[1]=v1;
+      triangles[t1idx].vertices[2]=v4;
+
+      triangles[newt].vertices[0]=v3;
+      triangles[newt].vertices[1]=v4;
+      triangles[newt].vertices[2]=v2;
+    }
+    else
+    {
+      triangles[t1idx].vertices[0]=v3;
+      triangles[t1idx].vertices[1]=v4;
+      triangles[t1idx].vertices[2]=v1;
+      
+      triangles[newt].vertices[0]=v3;
+      triangles[newt].vertices[1]=v2;
+      triangles[newt].vertices[2]=v1;
+    }
+    
+    vertices[v3].adjacentTriangles.push_back(newt);
+    std::vector<int>& temp=vertices[v2].adjacentTriangles;
+    for (auto it = temp.begin(); it != temp.end(); ) {
+      if (*it == t1idx) {
+        it = temp.erase(it); 
+        break;
+      } 
+      else {
+        ++it;
+      }
+    }
+    vertices[v2].adjacentTriangles.push_back(newt);
+    Vertex v4data;
+    vertices.push_back(v4data);
+    vertices[v4].position=(vertices[v1].position+vertices[v2].position)/2.0f;
+    vertices[v4].adjacentTriangles={newt,t1idx};
+    vertices[v4].normal=glm::vec3(0.0f);
+    glm::vec3 v1p,v2p,v3p,v4p;
+    v1p=vertices[v1].position;
+    v2p=vertices[v2].position;
+    v3p=vertices[v3].position;
+    v4p=vertices[v4].position;
+
+    if(clockwise)
+    {
+      vertices[v4].normal+= glm::cross((v3p-v4p),(v1p-v4p))/(glm::length(v1p-v4p)*glm::length(v1p-v4p)*glm::length(v3p-v4p)*glm::length(v3p-v4p));
+      vertices[v4].normal+= glm::cross((v2p-v4p),(v3p-v4p))/(glm::length(v3p-v4p)*glm::length(v3p-v4p)*glm::length(v2p-v4p)*glm::length(v2p-v4p));
+    }
+    else
+    {
+      vertices[v4].normal+= glm::cross((v1p-v4p),(v3p-v4p))/(glm::length(v1p-v4p)*glm::length(v1p-v4p)*glm::length(v3p-v4p)*glm::length(v3p-v4p));
+      vertices[v4].normal+= glm::cross((v3p-v4p),(v2p-v4p))/(glm::length(v3p-v4p)*glm::length(v3p-v4p)*glm::length(v2p-v4p)*glm::length(v2p-v4p));
+    }
+  }
+  else
+  {
+    // edge contained in two triangles
+    int v3,v4;
+    for (int i=0;i<3;i++)
+    {
+      if(triangles[t1idx].vertices[i]!=v1 && triangles[t1idx].vertices[i]!=v2)
+      v3=i;
+      if(triangles[t2idx].vertices[i]!=v1 && triangles[t2idx].vertices[i]!=v2)
+      v4=i;
+    }
+    
+    bool clockwise=false;
+    for (int i=0;i<2;i++)
+    {
+      if(triangles[t1idx].vertices[i]==v1 && triangles[t1idx].vertices[(i+1)%3]==v2)
+      {
+        clockwise=true;
+        break;
+      }
+    }
+    int v5=vertices.size();
+    int newt1 = triangles.size();
+    int newt2 = newt1+1;
+    Triangle newt1data, newt2data;
+    triangles.push_back(newt1data);
+    triangles.push_back(newt2data);
+
+    if(clockwise)
+    {
+      triangles[t1idx].vertices[0]=v3;
+      triangles[t1idx].vertices[1]=v1;
+      triangles[t1idx].vertices[2]=v5;
+
+      triangles[t2idx].vertices[0]=v4;
+      triangles[t2idx].vertices[1]=v2;
+      triangles[t2idx].vertices[2]=v5;
+      
+      triangles[newt1].vertices[0]=v3;
+      triangles[newt1].vertices[1]=v5;
+      triangles[newt1].vertices[2]=v2;
+
+      triangles[newt2].vertices[0]=v1;
+      triangles[newt2].vertices[1]=v4;
+      triangles[newt2].vertices[2]=v5;
+    }
+    else
+    {
+      triangles[t1idx].vertices[0]=v1;
+      triangles[t1idx].vertices[1]=v3;
+      triangles[t1idx].vertices[2]=v5;
+
+      triangles[t2idx].vertices[0]=v2;
+      triangles[t2idx].vertices[1]=v4;
+      triangles[t2idx].vertices[2]=v5;
+      
+      triangles[newt1].vertices[0]=v3;
+      triangles[newt1].vertices[1]=v2;
+      triangles[newt1].vertices[2]=v5;
+
+      triangles[newt2].vertices[0]=v5;
+      triangles[newt2].vertices[1]=v4;
+      triangles[newt2].vertices[2]=v1;
+    }
+    
+    vertices[v3].adjacentTriangles.push_back(newt1);
+    vertices[v4].adjacentTriangles.push_back(newt2);
+    std::vector<int>& temp=vertices[v2].adjacentTriangles;
+    for (auto it = temp.begin(); it != temp.end(); ) {
+      if (*it == t1idx) {
+        it = temp.erase(it); 
+        break;
+      } 
+      else {
+        ++it;
+      }
+    }
+    std::vector<int>& temp2=vertices[v1].adjacentTriangles;
+    for (auto it = temp2.begin(); it != temp2.end(); ) {
+      if (*it == t2idx) {
+        it = temp2.erase(it); 
+        break;
+      } 
+      else {
+        ++it;
+      }
+    }
+    vertices[v2].adjacentTriangles.push_back(newt1);
+    vertices[v1].adjacentTriangles.push_back(newt2);
+    Vertex v5data;
+    vertices.push_back(v5data);
+    vertices[v5].position=(vertices[v1].position+vertices[v2].position)/2.0f;
+    vertices[v5].adjacentTriangles={newt1,t1idx,newt2,t2idx};
+    vertices[v5].normal=glm::vec3(0.0f);
+    glm::vec3 v1p,v2p,v3p,v4p,v5p;
+    v1p=vertices[v1].position;
+    v2p=vertices[v2].position;
+    v3p=vertices[v3].position;
+    v4p=vertices[v4].position;
+    v5p=vertices[v5].position;
+
+    if(clockwise)
+    {
+      vertices[v5].normal+= glm::cross((v3p-v5p),(v1p-v5p))/(glm::length(v1p-v5p)*glm::length(v1p-v5p)*glm::length(v3p-v5p)*glm::length(v3p-v5p));
+      vertices[v5].normal+= glm::cross((v2p-v5p),(v3p-v5p))/(glm::length(v3p-v5p)*glm::length(v3p-v5p)*glm::length(v2p-v5p)*glm::length(v2p-v5p));
+      vertices[v5].normal+= glm::cross((v1p-v5p),(v4p-v5p))/(glm::length(v1p-v5p)*glm::length(v1p-v5p)*glm::length(v4p-v5p)*glm::length(v4p-v5p));
+      vertices[v5].normal+= glm::cross((v4p-v5p),(v2p-v5p))/(glm::length(v4p-v5p)*glm::length(v4p-v5p)*glm::length(v2p-v5p)*glm::length(v2p-v5p));
+    }
+    else
+    {
+      vertices[v5].normal+= glm::cross((v1p-v5p),(v3p-v5p))/(glm::length(v1p-v5p)*glm::length(v1p-v5p)*glm::length(v3p-v5p)*glm::length(v3p-v5p));
+      vertices[v5].normal+= glm::cross((v3p-v5p),(v2p-v5p))/(glm::length(v3p-v5p)*glm::length(v3p-v5p)*glm::length(v2p-v5p)*glm::length(v2p-v5p));
+      vertices[v5].normal+= glm::cross((v4p-v5p),(v1p-v5p))/(glm::length(v1p-v5p)*glm::length(v1p-v5p)*glm::length(v4p-v5p)*glm::length(v4p-v5p));
+      vertices[v5].normal+= glm::cross((v2p-v5p),(v4p-v5p))/(glm::length(v4p-v5p)*glm::length(v4p-v5p)*glm::length(v2p-v5p)*glm::length(v2p-v5p));
+    }
+  }
+}
+
+void Mesh::edgeCollapse(int v1, int v2)
+{
+  
+}
+
+bool Mesh::isValid()
+{
+  //check if triangle indices are valid
+  int n=vertices.size();
+  for(auto triangle: triangles)
+  {
+    for(int i=0;i<3;i++)
+    {
+      if(triangle.vertices[i]<0 || triangle.vertices[i]>=n)
+      {
+        std::cout<<"Triangle index out of bound"<<std::endl;
+        return false;
+      }
+    }
+  }
+  //check if adjacent triangle indices are valid 
+  n=triangles.size();
+  for (auto v:vertices)
+  {
+    for (int i:v.adjacentTriangles)
+    {
+      if(i<0 || i>=n)
+      {
+        std::cout<<"Adjacent triangle index out of bound"<<std::endl;
+        return false;
+      }
+    }
+  }
+
+  //check if triangles are valid
+  for(auto triangle:triangles)
+  {
+    glm::vec3 v1=vertices[triangle.vertices[0]].position, v2=vertices[triangle.vertices[1]].position,v3=vertices[triangle.vertices[2]].position;
+    glm::vec3 angle = glm::cross(v2-v1,v3-v1);
+    if(glm::all(glm::equal(angle, glm::vec3(0.0f))))
+    {
+      std::cout<<"Triangle formed by vertices "<<triangle.vertices[0]<<", "<<triangle.vertices[1]<<", "<<triangle.vertices[1]<<" is not valid(collinear vertices)"<<std::endl;
+      return false;
+    }
+  }
+
+  //check if adjacent triangles share 2 vertices
+  //check for manifoldness
+  //check for no duplicate triangles
+  //check for orientational consistency
+
+
+  return true;
+}

@@ -47,6 +47,18 @@ public:
 
   // Perform Taubin smoothing on the mesh
   void taubinSmoothMesh(int iterations);
+
+  //perform edge flip operation on the mesh
+  void edgeFlip(int vertexIndex1, int vertexIndex2);
+
+  //perform edge flip operation on the mesh
+  void edgeSplit(int vertexIndex1, int vertexIndex2);
+  
+  //perform edge flip operation on the mesh
+  void edgeCollapse(int vertexIndex1, int vertexIndex2);
+
+  //checks if mesh connectivity is valid or not
+  bool isValid();
 };
 
 #endif // MESH_HPP
