@@ -4,7 +4,7 @@ void Parser::parseOBJ(const std::string& filename, std::vector<glm::vec3>& verti
     std::ifstream file(filename);
     if(!file.good())
     {
-        std::cout<<"Cannor Open File "<<filename<<". Please check filename"<<std::endl;
+        std::cout<<"Cannot Open File "<<filename<<". Please check filename"<<std::endl;
     }
     std::string line;
 

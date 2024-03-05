@@ -477,7 +477,9 @@ void Mesh::edgeCollapse(int vertexIndex1, int vertexIndex2)
     std::cerr << "Edge does not exist between the two vertices" << std::endl;
     return;
   }
-
+  glm::vec3 updatedpos=(vertices[vertexIndex1].position+vertices[vertexIndex2].position)/2.0f;
+  vertices[vertexIndex1].position=(vertices[vertexIndex1].position+vertices[vertexIndex2].position)/2.0f;
+  vertices[vertexIndex1].normal=(vertices[vertexIndex1].normal+vertices[vertexIndex2].normal)/2.0f;
   // Remove the second vertex
   vertices.erase(vertices.begin() + vertexIndex2);
 

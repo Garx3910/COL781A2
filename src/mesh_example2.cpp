@@ -92,8 +92,9 @@ int main()
 {
 
   Mesh mesh = createSquareGrid(1.0f,1.0f,3,3);
-  mesh.edgeSplit(9,10);
+  mesh.edgeCollapse(9,10);
   mesh.edgeFlip(1,4);
+  mesh.edgeSplit(3,6);
 
 
   // Render or process the meshes as needed
